@@ -1,0 +1,7 @@
+.env
+certs
+node_modules
+server/configs
+dist
+build
+.DS_store
