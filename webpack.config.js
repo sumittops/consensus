@@ -3,7 +3,7 @@ const webpack = require('webpack');
 const dotenv = require('dotenv');
 const fs = require('fs');
 
-const envConfigs = dotenv.config({
+dotenv.config({
     path: __dirname + '/.env'
 });
 
@@ -33,8 +33,8 @@ module.exports = {
             filename: 'index.html'
         }),
         new webpack.DefinePlugin({
-            "process.env.GRAPHQL_HOST": envConfigs.parsed.GRAPHQL_HOST,
-            "process.env.GRAPHQL_WS_HOST": envConfigs.parsed.GRAPHQL_WS_HOST
+            "process.env.GRAPHQL_HOST": process.env.GRAPHQL_HOST,
+            "process.env.GRAPHQL_WS_HOST": process.env.GRAPHQL_WS_HOST
         })
     ],
     output: {
@@ -43,9 +43,9 @@ module.exports = {
     devServer: {
         historyApiFallback: true,
         https: {
-            key: fs.readFileSync('./certs/consensus.app+1-key.pem'),
-            cert: fs.readFileSync('./certs/consensus.app+1.pem'),
-            port: fs.readFileSync('/Users/sumitmajumdar/Library/Application Support/mkcert/rootCA.pem')
+            key: fs.readFileSync(process.env.SSL_KEY_PATH),
+            cert: fs.readFileSync(process.env.SSL_CERT_PATH),
+            port: fs.readFileSync(process.env.SSL_CA_PATH)
         },
         host: 'consensus.app',
         port: 9000

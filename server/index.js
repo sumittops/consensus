@@ -48,9 +48,9 @@ connectDb().then(async () => {
   }
   const app = express();
   const httpServer = https.createServer({
-    cert: fs.readFileSync('./certs/consensus.app+1.pem'),
-    key: fs.readFileSync('./certs/consensus.app+1-key.pem'),
-    ca: fs.readFileSync('/Users/sumitmajumdar/Library/Application Support/mkcert/rootCA.pem')
+    cert: fs.readFileSync(process.env.SSL_CERT_PATH),
+    key: fs.readFileSync(process.env.SSL_KEY_PATH),
+    ca: fs.readFileSync(process.env.SSL_CA_PATH)
   }, app);
   const apolloServer = new ApolloServer({
     typeDefs,
