@@ -3,11 +3,15 @@ import gql from 'graphql-tag'
 import { useState } from 'react';
 
 const { RTCPeerConnection, RTCSessionDescription } = window;
+const MEDIA_CONSTRAINTS = {
+    video: true,
+    audio: true
+}
 
-const useVideoCall = (caller, callee, debateId) => {
-
-    const [onCall, setOnCall] = useState(false)
-    const [peerConnection, setPeerConnection] = useState(null)
+const useVideoCall = (debateId, meId) => {
+    
+    const [peerConnection] = useState(new RTCPeerConnection());
+    // const [onCall, setOnCall] = useState(false)
     const [activeCall, setActiveCall] = useState(null);
     const [localStream, setLocalStream] = useState(null)
     const [remoteStream, setRemoteStream] = useState(null)
@@ -16,28 +20,41 @@ const useVideoCall = (caller, callee, debateId) => {
     const [endCallApi] = useMutation(END_CALL)
     const [acceptCallApi] = useMutation(ACCEPT_CALL)
 
+    peerConnection.ontrack = ({ streams: [stream] }) => {
+        setRemoteStream(stream);
+    }
 
     useSubscription(
         USER_CALLED, {
             async onSubscriptionData({ subscriptionData }) {
-                console.log('call received', subscriptionData);
-                await peerConnection.setRemoteDescription(
-                    subscriptionData.callerOffer
-                )
-                setOnCall(true)
-                // setActiveCall(subscriptionData)
+                const { data: { userCalled: data } } = subscriptionData
+                console.log('data.to === meId', data.to === meId);
+                if (data.to === meId) {
+                    console.log('call received');
+                    await peerConnection.setRemoteDescription(
+                        new RTCSessionDescription(data.offer)
+                    )
+                    const stream = await navigator.mediaDevices.getUserMedia(MEDIA_CONSTRAINTS);
+                    stream.getTracks().forEach(track => peerConnection.addTrack(track, stream))
+                    const answer = await peerConnection.createAnswer()
+                    await peerConnection.setLocalDescription(new RTCSessionDescription(answer))
+                    acceptCall(answer);
+                    setActiveCall(data)
+                    console.log('call accepted');
+                }
             }
         }
     )
     useSubscription(CALL_ACCEPTED, {
         async onSubscriptionData({ subscriptionData }) {
-            console.log('call accepted', subscriptionData);
-            if (!onCall) {
+            const { data: { callAccepted: data }  } = subscriptionData
+            if (data.answer && data.from == meId) {
+                console.log('current pc', peerConnection.localDescription);
                 await peerConnection.setRemoteDescription(
-                    subscriptionData.callerOffer
-                )
-                // setActiveCall(subscriptionData)
-                setOnCall(true)
+                    new RTCSessionDescription(data.answer)
+                )                
+                // setOnCall(true)
+                setActiveCall(data)
             }
         }
     })
@@ -50,34 +67,28 @@ const useVideoCall = (caller, callee, debateId) => {
             }
         }
     )
+
     
-    async function makeCall(stream) {
-        const peerConnection = new RTCPeerConnection()
+    async function makeCall(caller, callee) {
+        const stream = await window.navigator.mediaDevices.getUserMedia(MEDIA_CONSTRAINTS)
         const offer = await peerConnection.createOffer()
         await peerConnection.setLocalDescription(new RTCSessionDescription(offer))
-        await makeCallApi({ variables: { calleeId: callee, callerId: caller, offer }})
-        peerConnection.getTracks().forEach(
+        await makeCallApi({ variables: { to: callee, from: caller, offer, debateId }})
+        stream.getTracks().forEach(
             track => peerConnection.addTrack(track, stream)
         )
-        peerConnection.ontrack = ({ streams: [stream] }) => {
-            setRemoteStream(stream);
-        }
-        setPeerConnection(peerConnection)
         setLocalStream(stream)
     }
 
-    async function acceptCall() {
-        const answer = await peerConnection.createAnswer()
-        await peerConnection.setLocalDescription(new RTCSessionDescription(answer))
+    async function acceptCall(answer) {
         await acceptCallApi({
             variables: {
                 debateId,
                 offer: answer
             }
         })
-        peerConnection.ontrack = ({ streams: [stream] }) => {
-            setRemoteStream(stream);
-        }
+        setActiveCall({ ...activeCall, answer });
+        // setOnCall(true)
     }
 
     async function endCall(debateId) {
@@ -90,7 +101,7 @@ const useVideoCall = (caller, callee, debateId) => {
     return [
         activeCall,
         localStream,
-        remoteStream, 
+        remoteStream,
         { 
             makeCall, acceptCall, endCall
         }
@@ -98,13 +109,13 @@ const useVideoCall = (caller, callee, debateId) => {
 }
 
 const MAKE_CALL = gql `
-    mutation makeCall($callerId: ID!, $calleeId: ID!, $offer: RTCOfferInput!) {
-        makeCall(callerId: $callerId, calleeId: $calleeId, offer: $offer)
+    mutation makeCall($debateId: ID!, $from: ID!, $to: ID!, $offer: RTCOfferInput!) {
+        makeCall(debateId: $debateId, from: $from, to: $to, offer: $offer)
     }
 `
 
 const ACCEPT_CALL = gql `
-    mutation acceptCall($debateId: ID!, $offer: RTCOfferInput) {
+    mutation acceptCall($debateId: ID!, $offer: RTCOfferInput!) {
         acceptCall(debateId: $debateId, offer: $offer)
     }
 `
@@ -117,10 +128,16 @@ const END_CALL = gql `
 const USER_CALLED = gql `
     subscription onUserCalled {
         userCalled {
-            calleeId
-            callerId
-            calleeOffer
-            callerOffer
+            to
+            from
+            answer {
+                type
+                sdp
+            }
+            offer {
+                type
+                sdp
+            }
         }
     }
 `
@@ -128,10 +145,16 @@ const USER_CALLED = gql `
 const CALL_ACCEPTED = gql `
     subscription onCallAccepted {
         callAccepted {
-            calleeId
-            callerId
-            calleeOffer
-            callerOffer
+            to
+            from
+            answer {
+                type
+                sdp
+            }
+            offer {
+                type
+                sdp
+            }
         }
     }
 `

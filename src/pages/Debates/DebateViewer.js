@@ -22,15 +22,7 @@ const DebateViewer = ({ match }) => {
     var { data: userData } = useUserSession()
     var { data: debateData, loading: debateLoading  } = useQuery(GET_DEBATE, { variables: { id: debateId } });
     
-    const [activeCall, localStream, remoteStream, callMethods] = useVideoCall(
-        userData && userData.me && userData.me.id,
-        debateData && debateData.debate && (
-            userType === 'for' ? 
-            debateData.debate.againstParticipant.id :
-            debateData.debate.forParticipant.id
-        ),
-        debateId
-    )
+    const [activeCall, localStream, remoteStream, callMethods] = useVideoCall(debateId, userData && userData.me && userData.me.id)
 
     
 
@@ -63,15 +55,24 @@ const DebateViewer = ({ match }) => {
     }, [userConnected, userDisconnected, userData]);
 
     useEffect(() => {
-        if (activeCall) {
-            if (userType === 'for') {
-                forVideoRef.current.srcObject = localStream
-                if (remoteStream) againstVideoRef.current.srcObject = remoteStream
-            } else {
-                if (remoteStream) forVideoRef.current.srcObject = remoteStream
-                againstVideoRef.current.srcObject = localStream
-            }
+        if (userType === 'for') {
+            forVideoRef.current.srcObject = localStream
+            if (remoteStream) againstVideoRef.current.srcObject = remoteStream
+        } else {
+            if (remoteStream) forVideoRef.current.srcObject = remoteStream
+            againstVideoRef.current.srcObject = localStream
         }
+        // async function playStream() {
+        //     if (forVideoRef.current.srcObject) {
+        //         await forVideoRef.current.play();
+        //     }
+        //     if (againstVideoRef.current.srcObject) {
+        //         await againstVideoRef.current.play();
+        //     }
+        // }
+        // if (localStream || remoteStream) {
+        //     playStream();
+        // }
     }, [activeCall, remoteStream, localStream])
     
     if (userData && userData.me) {
@@ -90,13 +91,14 @@ const DebateViewer = ({ match }) => {
         }
     }
 
-    const handleCall = async (e) => {
+    const handleCall = (e) => {
         e.preventDefault()
-        window.navigator.getUserMedia({
-            video: true, audio: true
-        }, async (stream) => {
-            await callMethods.makeCall(stream)
-        }, console.error);
+        callMethods.makeCall(
+            userData.me.id,
+            userIsParticipant && userType === 'for' 
+            ? debateData.debate.againstParticipant.id
+            : debateData.debate.forParticipant.id
+        )
     }
 
     const handleAccept = async (e) => {
@@ -119,7 +121,7 @@ const DebateViewer = ({ match }) => {
         </Header>
         <Content>
             <ParticipantViewport type = "for">
-                <ParticipantVideo ref = {forVideoRef} />
+                <ParticipantVideo ref = {forVideoRef} autoPlay/>
                 <ArgumentSheet>
                     <Title variant = "h3">For</Title>
                     { debateData && debateData.debate && <Text>{debateData.debate.forParticipant.username}</Text> }
@@ -129,7 +131,7 @@ const DebateViewer = ({ match }) => {
                 </ArgumentSheet>
             </ParticipantViewport>
             <ParticipantViewport type = "against">
-                <ParticipantVideo ref = {againstVideoRef} />
+                <ParticipantVideo ref = {againstVideoRef}  autoPlay/>
                 <ArgumentSheet>
                     <Title variant = "h3">Against</Title>
                     { debateData && debateData.debate && <Text>{debateData.debate.againstParticipant.username}</Text> }
@@ -144,7 +146,7 @@ const DebateViewer = ({ match }) => {
                     </Button>
                 </StartButton>
             }
-            {  activeCall && activeCall.calleeId == userId && <StartButton>
+            {  activeCall && activeCall.to == userData.me.id && <StartButton>
                     <Button onClick = {handleAccept}>
                         Accept
                     </Button>

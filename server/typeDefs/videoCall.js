@@ -8,7 +8,7 @@ module.exports = gql `
     }
 
     extend type Mutation {
-        makeCall(debateId: ID!, callerId: ID!, calleeId: ID!, offer: RTCOfferInput!): Boolean!
+        makeCall(debateId: ID!, from: ID!, to: ID!, offer: RTCOfferInput!): Boolean!
         endCall(debateId: ID!): Boolean!
         acceptCall(debateId: ID!, offer: RTCOfferInput!): Boolean!
     }
@@ -18,10 +18,10 @@ module.exports = gql `
     }
 
     type ActiveCall {
-        callerId: String
-        calleeId: String
-        callerOffer: RTCOffer 
-        calleeOffer: RTCOffer
+        from: String
+        to: String
+        offer: RTCOffer 
+        answer: RTCOffer
     }
 
     input RTCOfferInput {

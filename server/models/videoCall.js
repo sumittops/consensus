@@ -1,5 +1,4 @@
 const { uniq } = require('lodash');
-
 const redisClient = require('../services/redisClient');
 
 class VideoCall {
@@ -68,9 +67,9 @@ class VideoCall {
         })
     }
 
-    createCall(callerId, calleeId, offerId, debateId) {
+    createCall(from, to, offer, debateId) {
         const activeCall = { 
-            callerId, calleeId, callerOffer: offerId, calleeOffer: null
+            from, to, offer, answer: null
         };
         return new Promise(
             (resolve) => this.client.hset(
@@ -82,26 +81,26 @@ class VideoCall {
         );
     }
 
-    acceptCall(calleeOffer, debateId) {
+    acceptCall(answer, debateId) {
         return new Promise(
             (resolve) => {
                 this.client.hget(
                     this.activeCallsMap,
                     debateId, (error, reply) => {
-                        if (!error && !reply) {
+                        if (!error && reply) {
                             const activeCall = JSON.parse(reply);
-                            activeCall.calleeOffer = calleeOffer;
+                            activeCall.answer = answer;
                             this.client.hset(
                                 this.activeCallsMap,
                                 debateId,
-                                JSON.stringify(activeCall),
-                                n => resolve([n > 0, activeCall])
+                                JSON.stringify(activeCall)
                             )
+                            resolve(activeCall);
                         }
                         if (error) {
-                            console.log(error)
+                            console.error(error)
                         }
-                        resolve([false])
+                        resolve(false)
                     }
                 )
             }

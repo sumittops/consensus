@@ -55,7 +55,10 @@ connectDb().then(async () => {
   const apolloServer = new ApolloServer({
     typeDefs,
     resolvers,
-    async context({ req }) {
+    async context({ req, connection }) {
+      if (connection) {
+        return connection.context;
+      }
       const me = await getMe(req);
       return {
         models,
@@ -69,13 +72,9 @@ connectDb().then(async () => {
   
   const port = process.env.APP_PORT || 8000;
   const host = process.env.APP_HOST || 'localhost'
-  // pem.createCertificate({ days: 1, selfSigned: true }, (err, keys) => {
-  //   if (err) {
-  //     throw err;
   httpServer.listen(port, host, 2, () => {
     console.log(`Server running on https://${host}:${port}/graphql`);
   });
-  // })
 }).catch((e) => {
   console.error(e);
   process.exit();

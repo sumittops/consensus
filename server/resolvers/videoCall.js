@@ -1,4 +1,4 @@
-const { PubSub } = require('apollo-server-express');
+const { PubSub, withFilter } = require('apollo-server-express');
 const { combineResolvers } = require('graphql-resolvers');
 const { Types } = require('mongoose');
 const { isAuthenticated } = require('./authorization');
@@ -13,65 +13,55 @@ const pubsub = new PubSub()
 const videoCallResolver = {
     Subscription: {
         userCalled: {
-            subscribe: () => {
-                pubsub.asyncIterator(
-                    [USER_CALLED]
-                )
-            }
+            subscribe: withFilter(
+                () => pubsub.asyncIterator([USER_CALLED]),
+                (payload, variables) => {
+                    console.log(payload, variables);
+                    return true;
+                }
+            )
         },
         callAccepted: {
-            subscribe: () => {
-                pubsub.asyncIterator(
-                    [CALL_ACCEPTED]
-                )
-            }
+            subscribe: () => pubsub.asyncIterator([CALL_ACCEPTED])
         },
         callEnded: {
-            subscribe: () => {
-                pubsub.asyncIterator(
-                    [CALL_ENDED]
-                )
-            }
+            subscribe: () => pubsub.asyncIterator([CALL_ENDED])
         }
     },
     Mutation: {
         makeCall: combineResolvers(
             isAuthenticated,
-            async  (_, { callerId, calleeId, callerOffer, debateId }, { models }) => {
-                const isOnline = await models.VideoCall.isOnline([callerId, calleeId]);
+            async  (_, { from, to, offer, debateId }, { models }) => {
+                const isOnline = await models.VideoCall.isOnline([from, to]);
                 if (!isOnline) {
                     return null;
                 }
+                await models.VideoCall.createCall(
+                    from, to, offer, debateId
+                );
                 pubsub.publish(
                     USER_CALLED, {
                     userCalled: {
-                        callerId,
-                        calleeId,
-                        callerOffer,
-                        calleeOffer: null
+                        from,
+                        to,
+                        offer,
+                        answer: null
                     }
                 });
-
-                return await models.VideoCall.createCall(
-                    callerId, calleeId, callerOffer, debateId
-                );
-                
+                return true;
             }
         ),
         acceptCall: combineResolvers(
             isAuthenticated,
-            async (_, { calleeOffer, debateId }, { models }) => {
-                const [success, activeCall] = await models.VideoCall.acceptCall(
-                    calleeOffer, debateId
+            async (_, { offer: answer, debateId }, { models }) => {
+                const activeCall = await models.VideoCall.acceptCall(
+                    answer, debateId
                 );
-                if (success) {
-                    pubsub.publish(
-                        CALL_ACCEPTED, {
-                        callAccepted: { args:  activeCall }
-                    });
-                }
-                return success;
-                
+                pubsub.publish(
+                    CALL_ACCEPTED, {
+                    callAccepted: { ...activeCall }
+                });
+                return true;
             }
         ),
         endCall: combineResolvers(
