@@ -2,7 +2,6 @@ const { uniq } = require('lodash');
 const redisClient = require('../services/redisClient');
 
 class VideoCall {
-    client;
     constructor() {
         this.client = redisClient;
         this.debateUsersKey = 'debateusers:';

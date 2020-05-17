@@ -1,11 +1,10 @@
 const redis = require('redis');
 
 const redisClient = redis.createClient({
-    port: '6379',
-    host: 'localhost',
-    prefix: 'consensus:'
+    port: process.env.REDIS_PORT,
+    host: process.env.REDIS_HOST,
+    prefix: process.env.REDIS_PREFIX
 });
 
-// redisClient.hgetall()
 
 module.exports = redisClient;

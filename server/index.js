@@ -1,4 +1,5 @@
 const https = require('https');
+const http =  require('http');
 const fs = require('fs');
 
 require('dotenv').config();
@@ -47,11 +48,17 @@ connectDb().then(async () => {
     await Promise.all([user1.save(), user2.save(), user3.save()]);
   }
   const app = express();
-  const httpServer = https.createServer({
-    cert: fs.readFileSync(process.env.SSL_CERT_PATH),
-    key: fs.readFileSync(process.env.SSL_KEY_PATH),
-    ca: fs.readFileSync(process.env.SSL_CA_PATH)
-  }, app);
+  let httpServer;
+  const hasHttps = process.env.SSL_CA_PATH && process.env.SSL_CERT_PATH && process.env.SSL_KEY_PATH; 
+  if (hasHttps) { 
+    httpServer = https.createServer({
+      cert: fs.readFileSync(process.env.SSL_CERT_PATH),
+      key: fs.readFileSync(process.env.SSL_KEY_PATH),
+      ca: fs.readFileSync(process.env.SSL_CA_PATH)
+    }, app);
+  } else {
+    httpServer = http.createServer(app);
+  }
   const apolloServer = new ApolloServer({
     typeDefs,
     resolvers,
@@ -73,7 +80,7 @@ connectDb().then(async () => {
   const port = process.env.APP_PORT || 8000;
   const host = process.env.APP_HOST || 'localhost'
   httpServer.listen(port, host, 2, () => {
-    console.log(`Server running on https://${host}:${port}/graphql`);
+    console.log(`Server running on ${hasHttps ? 'https' : 'http'}://${host}:${port}/graphql`);
   });
 }).catch((e) => {
   console.error(e);

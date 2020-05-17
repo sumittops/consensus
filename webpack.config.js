@@ -7,6 +7,8 @@ dotenv.config({
     path: __dirname + '/.env'
 });
 
+const httpsConfigExists = process.env.SSL_KEY_PATH && process.env.SSL_CERT_PATH;
+
 module.exports = {
     module: {
         rules: [
@@ -42,12 +44,11 @@ module.exports = {
     },
     devServer: {
         historyApiFallback: true,
-        https: {
+        https: httpsConfigExists ? {
             key: fs.readFileSync(process.env.SSL_KEY_PATH),
             cert: fs.readFileSync(process.env.SSL_CERT_PATH),
-            port: fs.readFileSync(process.env.SSL_CA_PATH)
-        },
-        host: 'consensus.app',
+        } : false,
+        host: httpsConfigExists ? 'consensus.app' : 'localhost',
         port: 9000
     }
 }

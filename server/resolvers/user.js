@@ -40,7 +40,7 @@ module.exports = {
         password,
       });
 
-      return { token: createToken(user, secret, 'm') };
+      return { token: createToken(user, secret, '60m') };
     },
 
     signIn: async (
@@ -62,7 +62,7 @@ module.exports = {
         throw new AuthenticationError('Invalid password.');
       }
 
-      return { token: createToken(user, secret, '6h') };
+      return { token: createToken(user, secret, '60m') };
     },
 
     updateUser: combineResolvers(
