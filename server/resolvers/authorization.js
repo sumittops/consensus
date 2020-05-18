@@ -1,4 +1,4 @@
-const { ForbiddenError } = require('apollo-server');
+const { ForbiddenError } = require('apollo-server-express');
 const { combineResolvers, skip } = require('graphql-resolvers');
 
 const isAuthenticated = (parent, args, { me }) =>

@@ -10,6 +10,7 @@ dotenv.config({
 const httpsConfigExists = process.env.SSL_KEY_PATH && process.env.SSL_CERT_PATH;
 
 module.exports = {
+    entry: './index.js',
     module: {
         rules: [
             {
@@ -31,7 +32,7 @@ module.exports = {
     },
     plugins: [
         new HtmlWebpackPlugin({
-            template: 'src/index.html',
+            template: 'index.html',
             filename: 'index.html'
         }),
         new webpack.DefinePlugin({
@@ -48,7 +49,7 @@ module.exports = {
             key: fs.readFileSync(process.env.SSL_KEY_PATH),
             cert: fs.readFileSync(process.env.SSL_CERT_PATH),
         } : false,
-        host: httpsConfigExists ? 'consensus.app' : 'localhost',
+        host: httpsConfigExists ? 'consensus.app' : '0.0.0.0',
         port: 9000
     }
 }

@@ -78,7 +78,7 @@ connectDb().then(async () => {
   apolloServer.applyMiddleware({ app, path: '/graphql' });
   
   const port = process.env.APP_PORT || 8000;
-  const host = process.env.APP_HOST || 'localhost'
+  const host = process.env.APP_HOST || '0.0.0.0'
   httpServer.listen(port, host, 2, () => {
     console.log(`Server running on ${hasHttps ? 'https' : 'http'}://${host}:${port}/graphql`);
   });

@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { combineResolvers } = require('graphql-resolvers');
-const { AuthenticationError, UserInputError } = require('apollo-server');
+const { AuthenticationError, UserInputError } = require('apollo-server-express');
 
 const { isAdmin, isAuthenticated } = require('./authorization');
 
