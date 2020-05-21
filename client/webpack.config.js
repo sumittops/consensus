@@ -10,7 +10,7 @@ dotenv.config({
 const httpsConfigExists = process.env.SSL_KEY_PATH && process.env.SSL_CERT_PATH;
 
 module.exports = {
-    entry: './index.js',
+    entry: './src/index.js',
     module: {
         rules: [
             {
@@ -32,7 +32,7 @@ module.exports = {
     },
     plugins: [
         new HtmlWebpackPlugin({
-            template: 'index.html',
+            template: 'src/index.html',
             filename: 'index.html'
         }),
         new webpack.DefinePlugin({

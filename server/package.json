@@ -2,10 +2,10 @@
     "name": "consensus-api",
     "version": "1.0.0",
     "description": "",
-    "main": "index.js",
+    "main": "src/index.js",
     "scripts": {
-      "start:server": "nodemon server/index.js",
-      "start:testserver": "RESET_DB=true nodemon server/index.js",
+      "start:server": "nodemon .",
+      "start:testserver": "RESET_DB=true nodemon .",
       "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "Tymus",

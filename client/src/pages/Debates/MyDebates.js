@@ -20,7 +20,12 @@ const MyDebates = ({ history, match }) => {
                 <Text>{debate.description}</Text>
             </DebateListItem>
         ))}
-
+        { data && data.debates && data.debates.length === 0 && (
+            <div>
+                <Title>No Debates Yet!</Title>
+                <Text>Create Yours</Text>
+            </div>
+        )}
     </Root>
 
 }

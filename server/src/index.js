@@ -1,12 +1,16 @@
 const https = require('https');
 const http =  require('http');
 const fs = require('fs');
+const path = require('path');
 
-require('dotenv').config();
+require('dotenv').config({
+  path: path.resolve(__dirname, '..', '.env')
+});
+
 const express = require('express');
 const jwt = require('jsonwebtoken');
 
-const { ApolloServer, /* AuthenticationError */ } = require('apollo-server-express');
+const { ApolloServer, AuthenticationError } = require('apollo-server-express');
 
 const { models, connectDb } = require('./models');
 const resolvers = require('./resolvers');
@@ -19,7 +23,7 @@ const getMe = async req => {
     try {
       return await jwt.verify(token, process.env.APP_SECRET);
     } catch (e) {
-      return null;
+      throw new AuthenticationError()
     }
   }
 };
@@ -66,7 +70,12 @@ connectDb().then(async () => {
       if (connection) {
         return connection.context;
       }
-      const me = await getMe(req);
+      let me = null;
+      try {
+        me = await getMe(req);
+      } catch (e) {
+        console.log('User not resolved', e);
+      }
       return {
         models,
         me,
