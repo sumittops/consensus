@@ -1,11 +1,9 @@
-version: "2"
+version: "3.8"
 services:
     app:
         container_name: app
         restart: always
         build: ./server
-        volumes: 
-            - ./server/src:/app/src
         ports: 
             - "8000:8000"
         links:
@@ -29,8 +27,6 @@ services:
         container_name: client
         restart: always
         build: ./client
-        volumes: 
-            - ./client/src:/client/src
         ports: 
             - "9000:9000"
         links:

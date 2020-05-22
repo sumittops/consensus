@@ -1,0 +1,8 @@
+version: "3.8"
+services: 
+    app:
+        volumes: 
+            - ./server/src:/app/src
+    client:
+        volumes: 
+            - ./client/src:/client/src
