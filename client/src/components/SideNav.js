@@ -48,7 +48,7 @@ const links = [{
 }, {
     label: 'Debates',
     route: '/debates',
-    match: /\/debates\/?.*/g
+    match: /\/debates\/?.*/
 
 }];
 
