@@ -12,7 +12,6 @@ import { InMemoryCache } from 'apollo-cache-inmemory'
 import { ApolloProvider } from '@apollo/react-hooks'
 import App from './App';
 
-// const GRAPHQL_HOST = process.env.GRAPHQL_HOST;
 
 const httpLink = new HttpLink({
     uri: process.env.GRAPHQL_HOST
@@ -33,7 +32,7 @@ const wsLink = new WebSocketLink({
 const authLink = new ApolloLink((operation, forward) => {
     operation.setContext(({ headers = {}}) => {
         const token = localStorage.getItem('authToken');
-        if (!token) return headers;
+        if (!token) return { headers };
         return {
             headers: {
                 ...headers,

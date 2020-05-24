@@ -16,8 +16,9 @@ const MyDebates = ({ history, match }) => {
             <DebateListItem key = {debate.id} onClick = {() => {
                 history.push(`${match.url}/${debate.id}`);
             }}>
-                <Title>{debate.title}</Title>
+                <Title variant = "h2">{debate.title}</Title>
                 <Text>{debate.description}</Text>
+                <Text variant = "display4">{debate.forParticipant.username} vs {debate.againstParticipant.username}</Text>
             </DebateListItem>
         ))}
         { data && data.debates && data.debates.length === 0 && (
