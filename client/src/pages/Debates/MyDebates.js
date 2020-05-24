@@ -5,19 +5,28 @@ import PropTypes from 'prop-types'
 import { useQuery } from '@apollo/react-hooks'
 import Title from '../../components/shared/Title'
 import Text from '../../components/shared/Text'
+import Button from '../../components/shared/Button'
+import FormContainer from '../../components/shared/FormContainer'
+
 
 const MyDebates = ({ history, match }) => {
     const { loading, data } = useQuery(GET_MY_DEBATES)
 
     return <Root>
+        <FormContainer>
+
         <Title variant = "h1">My Debates</Title>
+        <Button onClick = {() => history.push(`${match.url}/create`)}>
+            Create New Challenge
+        </Button>
         { loading && <Title variant = "h4">Loading</Title>}
         { data && data.debates && data.debates.map(debate => (
             <DebateListItem key = {debate.id} onClick = {() => {
                 history.push(`${match.url}/${debate.id}`);
             }}>
-                <Title>{debate.title}</Title>
+                <Title variant = "h2">{debate.title}</Title>
                 <Text>{debate.description}</Text>
+                <Text variant = "display4">{debate.forParticipant.username} vs {debate.againstParticipant.username}</Text>
             </DebateListItem>
         ))}
         { data && data.debates && data.debates.length === 0 && (
@@ -26,6 +35,7 @@ const MyDebates = ({ history, match }) => {
                 <Text>Create Yours</Text>
             </div>
         )}
+        </FormContainer>
     </Root>
 
 }
@@ -58,8 +68,11 @@ const Root = styled.div `
 const DebateListItem = styled.div `
     margin: 20px 0;
     padding: 12px 16px;
-    background-color: #fff;
+    background-color: #eee;
     cursor: pointer;
+    &:hover {
+        box-shadow: 0 1px 3px #ccc;
+    }
 `
 
 

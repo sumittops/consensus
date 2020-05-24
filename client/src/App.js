@@ -12,11 +12,15 @@ import theme from './theme'
 
 const App = () => {
     const [authModalOpen, setAuthModalOpen] = useState(false);
+    const [defaultAuthMode, setDefaultAuthMode] = useState('signIn');
     return (
         <>
             <Root>
                 <Router>
-                    <SideNav setAuthOpen = {() => setAuthModalOpen(true)} />
+                    <SideNav setAuthOpen = {(defaultMode) => {
+                        setAuthModalOpen(true)
+                        setDefaultAuthMode(defaultMode)
+                    }} />
                     <Content>
                         <Switch>
                             <Route path = "/" exact
@@ -34,6 +38,7 @@ const App = () => {
             <UserAuth 
                 open = { authModalOpen }
                 onClose = {() => setAuthModalOpen(false)}
+                defaultMode = {defaultAuthMode}
             />
         </>
     )

@@ -1,14 +1,16 @@
 import React from 'react'
 import styled from 'styled-components'
 
+import Title from '../components/shared/Title'
+import Text from '../components/shared/Text'
 
 
 const Home =  () => {
     return <Root>
-        <PageTitle>Consensus</PageTitle>
-        <TextDisplay1>
+        <Title variant = "h1">Consensus</Title>
+        <Text>
             Lets resolve conflicts and reach consensus.
-        </TextDisplay1>
+        </Text>
     </Root>
 }
 

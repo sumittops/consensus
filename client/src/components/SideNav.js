@@ -20,10 +20,10 @@ const SideNav = ({ location, setAuthOpen }) => {
             }
             <Flexer />
             { !hideSignUp && <SignUpPill>
-                    <SubButton withBorder onClick = {setAuthOpen}>
+                    <SubButton withBorder onClick = {() => setAuthOpen('signIn')}>
                         Sign In
                     </SubButton>
-                    <SubButton onClick = {setAuthOpen}>
+                    <SubButton onClick = {() => setAuthOpen('signUp')}>
                         Sign Up
                     </SubButton>
                 </SignUpPill>
@@ -48,7 +48,7 @@ const links = [{
 }, {
     label: 'Debates',
     route: '/debates',
-    match: /\/debates\/?.*/g
+    match: /\/debates\/?.*/
 
 }];
 

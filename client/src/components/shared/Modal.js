@@ -7,7 +7,9 @@ const Modal = ({ children, onClose }) => (
     <Root>
         <Overlay>
             <Header>
-                <FaTimes size = {32} color = "#fff" onClick = {onClose} />
+                <IconButton  onClick = {onClose}>
+                    <FaTimes size = {32} color = "#fff"/>
+                </IconButton>
             </Header>
             <Content>
                 { children }
@@ -26,6 +28,19 @@ const Root = styled.div `
     height: 100vh;
     width: 100vw;
     top: 0;
+`
+
+const IconButton = styled.div `
+    height: 32px;
+    width: 32px;
+    border-radius: 12px;
+    padding: 8px;
+    &:hover {
+        cursor: pointer;
+        background-color: #333a;
+    }
+    position: relative;
+    z-index: 1;
 `
 
 const Header = styled.div `
