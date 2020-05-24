@@ -16,6 +16,12 @@ module.exports =  gql `
     extend type Mutation {
         userConnected(userId: ID!, debateId: ID!): Int!
         userDisconnected(userId: ID!, debateId: ID!): Int!
+        createDebate(
+            title: String!,
+            description: String, 
+            forParticipant: ID!,
+            againstParticipant: ID!
+        ): Debate!
     }
 
 `

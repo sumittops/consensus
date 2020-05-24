@@ -1,5 +1,6 @@
-// const { combineResolvers } = require('graphql-resolvers');
-// const { isAuthenticated } = require('./authorization');
+const { combineResolvers } = require('graphql-resolvers');
+const { isAuthenticated } = require('./authorization');
+
 
 const debateResolver = {
     Query: {
@@ -20,7 +21,19 @@ const debateResolver = {
         userDisconnected: async (parent, { userId, debateId }, { models }) => {
             const userIds = await models.VideoCall.removeOnlineUser(debateId, userId);
             return userIds.length;
-        }
+        },
+        createDebate: combineResolvers(
+            isAuthenticated,
+            async (_, { title, description, forParticipant, againstParticipant }, { models }) => {
+               const debate = await  models.Debate.create({
+                    title,
+                    description,
+                    forParticipant,
+                    againstParticipant
+               });
+               return debate;
+            }
+        )
     },
     Debate: {
         forParticipant: async (debate, _, { models }) => {
