@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, createContext, useContext } from 'react'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -10,9 +10,24 @@ import Debates from './pages/Debates'
 import theme from './theme'
 
 
-const App = () => {
+export const useAppState = () => {
     const [authModalOpen, setAuthModalOpen] = useState(false);
     const [defaultAuthMode, setDefaultAuthMode] = useState('signIn');
+    return {
+        authModalOpen,
+        defaultAuthMode,
+        setAuthModalOpen,
+        setDefaultAuthMode
+    }
+}
+
+export const AppStateContext = createContext();
+
+const App = () => {
+    const { authModalOpen,
+        defaultAuthMode,
+        setAuthModalOpen,
+        setDefaultAuthMode } = useContext(AppStateContext);
     return (
         <>
             <Root>

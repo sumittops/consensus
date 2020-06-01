@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import gql from 'graphql-tag'
@@ -9,6 +9,7 @@ import Button from './shared/Button'
 import TextField from './shared/TextField'
 import Title from './shared/Title'
 import theme from '../theme'
+import { AppErrorContext } from './shared/ErrorDisplay'
 
 
 const UserAuthenticator = ({ open, onClose, defaultMode = 'signIn' }) => {
@@ -19,6 +20,7 @@ const UserAuthenticator = ({ open, onClose, defaultMode = 'signIn' }) => {
     
     const [signIn, signInResponse] = useMutation(SIGN_IN)
     const [signUp, signUpResponse] = useMutation(SIGN_UP)
+    const { addError } = useContext(AppErrorContext)
     
     
     useEffect(() => {
@@ -50,17 +52,27 @@ const UserAuthenticator = ({ open, onClose, defaultMode = 'signIn' }) => {
 
     const onSignIn = async () => {
         if (login.trim().length && password.trim().length) {
-            const response = await signIn({
-                variables: {
-                    login,
-                    password
-                } 
-            });
-            if (response.data) {
-                const { signIn: { token } } = response.data;
-                localStorage.setItem('authToken', token);
-                delayedPageRefresh();
-                onClose(true);
+            try {
+                const response = await signIn({
+                    variables: {
+                        login,
+                        password
+                    } 
+                });
+                if (response.data) {
+                    const { signIn: { token } } = response.data;
+                    localStorage.setItem('authToken', token);
+                    delayedPageRefresh();
+                    onClose(true);
+                }
+            } catch(errors) {
+                console.log('errors', Object.keys(errors));
+                if (errors) {
+                    addError({
+                        title: 'Authentication failed',
+                        description: errors.message
+                    });
+                }
             }
         }
     }

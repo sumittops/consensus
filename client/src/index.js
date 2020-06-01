@@ -10,7 +10,9 @@ import { getMainDefinition } from 'apollo-utilities'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 
 import { ApolloProvider } from '@apollo/react-hooks'
-import App from './App';
+import App, { useAppState, AppStateContext } from './App'
+import ErrorDisplay from './components/shared/ErrorDisplay'
+import { AppErrorContext, useAppError } from './components/shared/ErrorDisplay'
 
 
 const httpLink = new HttpLink({
@@ -67,11 +69,25 @@ const client = new ApolloClient({
     cache: new InMemoryCache()
 });
 
+const Main = () => {
+
+    const appError = useAppError()
+    const appState = useAppState()
+    return (
+        <ApolloProvider client = {client}>
+            <ThemeProvider theme = {{ mode: 'light' }}>
+            <AppErrorContext.Provider value  = {appError}>
+                <AppStateContext.Provider value = {appState}>
+                    <App />
+                    <ErrorDisplay />
+                </AppStateContext.Provider>
+            </AppErrorContext.Provider>
+            </ThemeProvider>
+        </ApolloProvider>
+    )
+}
+
 ReactDOM.render(
-    <ApolloProvider client = {client}>
-        <ThemeProvider theme = {{ mode: 'light' }}>
-            <App />
-        </ThemeProvider>
-    </ApolloProvider>,
+    <Main />,
     document.querySelector('#app')
 );
