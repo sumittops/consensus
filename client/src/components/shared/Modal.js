@@ -7,7 +7,7 @@ const Modal = ({ children, onClose }) => (
     <Root>
         <Overlay>
             <Header>
-                <IconButton  onClick = {onClose}>
+                <IconButton id = "close-button" onClick = {onClose}>
                     <FaTimes size = {32} color = "#fff"/>
                 </IconButton>
             </Header>
